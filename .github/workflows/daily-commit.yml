@@ -2,8 +2,11 @@ name: Daily Commit Automation
 
 on:
   schedule:
-    - cron: '0 9 * * *'  # Runs daily at 9:00 AM UTC
-  workflow_dispatch:      # Allows manual triggering if needed
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   daily-commit:
@@ -12,10 +15,12 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
+      with:
+        ref: main  # Ensure this matches your default branch
 
     - name: Update Status File (21f3002733@ds.study.iitm.ac.in)
       run: |
-        echo "Last updated: $(date -u)" > daily_update.txt
+        echo "Last updated: $(date -u)" >> daily_update.txt
 
     - name: Commit and Push Changes
       run: |
@@ -23,4 +28,4 @@ jobs:
         git config --global user.email "21f3002733@ds.study.iitm.ac.in"
         git add daily_update.txt
         git commit -m "Automated daily update: $(date -u)" || echo "No changes to commit"
-        git push
+        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
